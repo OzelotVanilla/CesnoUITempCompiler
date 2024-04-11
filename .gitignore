@@ -1,0 +1,9 @@
+# For the file that is created because of your IDE or system,
+#  please save to `.git/info/exclude`.
+
+node_modules/
+tsconfig.tsbuildinfo
+
+lib/
+es/
+dist/

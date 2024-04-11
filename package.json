@@ -1,0 +1,36 @@
+{
+    "name": "@pl_and_ts/cesno_ui_temp_compiler",
+    "description": "Library for temporary Cesno UI compiler which transpile to React or Vue",
+    "version": "0.0.1",
+    "author": "Ozelot Vanilla",
+    "license": "LGPL-3.0-only",
+    "keywords": [ "compiler" ],
+    "devDependencies": {
+        "@types/jest": "^29.5.12",
+        "jest": "^29.7.0",
+        "ts-jest": "^29.1.2",
+        "ts-node": "^10.9.2",
+        "tsup": "^8.0.2",
+        "typescript": "^5.4.5"
+    },
+    "files": [
+        "dist",
+        "license",
+        "readme.md"
+    ],
+    "type": "module",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/OzelotVanilla/CesnoUITempCompiler.git"
+    },
+    "scripts": {
+        "build": "tsup --config ./tsup.config.ts",
+        "test": "jest --config jestconfig.json --silent=false"
+    }
+}
