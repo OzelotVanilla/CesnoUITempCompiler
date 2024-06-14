@@ -13,7 +13,8 @@
         "ts-jest": "^29.1.2",
         "ts-node": "^10.9.2",
         "tsup": "^8.0.2",
-        "typescript": "^5.4.5"
+        "typescript": "^5.4.5",
+        "@lezer/generator": "^1.7.0"
     },
     "files": [
         "dist",
@@ -33,9 +34,11 @@
     },
     "scripts": {
         "build": "tsup --config ./tsup.config.ts",
-        "test": "jest --config jestconfig.json --silent=false"
+        "test": "jest --config jestconfig.json --silent=false",
+        "prepare": "lezer-generator src/my.grammar -o src/parser.js"
     },
     "dependencies": {
+        "@lezer/lr": "^1.4.1",
         "js-tokens": "^9.0.0"
     }
 }
