@@ -57,7 +57,9 @@ export namespace AcceptableType
         {
             super({})
             this.elements = elements
-            this.element_type = element_type
+            this.element_type = element_type instanceof AcceptableType.Type
+                ? element_type
+                : AcceptableType.Type.make({ class_name: element_type })
         }
     }
 
@@ -85,12 +87,25 @@ export namespace AcceptableType
             this.generics = generics
         }
 
-        public static make<InferredGenericsType extends (Record<string, AcceptableType.Type> | null)>(
+        public static make<InferredGenericsType extends (Record<string, AcceptableType.Type | AcceptableTypeName> | null)>(
             { class_name, generics = null as InferredGenericsType }: { class_name: AcceptableTypeName, generics?: InferredGenericsType }
-        )
+        ): AcceptableType.Type<Extract<keyof InferredGenericsType, string>>
         {
-            return new AcceptableType.Type<Extract<keyof InferredGenericsType, string>>({
-                class_name, generics
+            type GenericNormFunc = (param: [string, AcceptableType.Type | AcceptableTypeName]) => [string, AcceptableType.Type]
+
+            return new AcceptableType.Type({
+                class_name,
+                generics: generics != null
+                    ? Object.fromEntries(Object.entries(generics).map(
+                        (([generics_name, generics_type]) =>
+                            [
+                                generics_name,
+                                generics_type instanceof AcceptableType.Type
+                                    ? generics_type
+                                    : AcceptableType.Type.make({ class_name: generics_type })
+                            ]) as GenericNormFunc
+                    ))
+                    : null
             })
         }
     }
@@ -101,7 +116,7 @@ export namespace AcceptableType
 
     export type Array_Args<EleType> = BaseObject_Args & {
         elements?: EleType[],
-        element_type: AcceptableType.Type
+        element_type: AcceptableType.Type | AcceptableTypeName
     }
 
     export type Type_Args = {
