@@ -38,7 +38,7 @@
     },
     "scripts": {
         "build": "pnpm run build_lezer_parser && pnpm run build_ts",
-        "test": "jest --config jestconfig.json --silent=false",
+        "test": "pnpm run build_lezer_parser && jest --config jestconfig.json --silent=false",
         "prepare": "pnpm run build_lezer_parser",
         "build_lezer_parser": "lezer-generator src/analyser/lezer_parser/cesno_ui.grammar -o src/analyser/lezer_parser/parser.js",
         "build_ts": "tsup --config ./tsup.config.ts"
