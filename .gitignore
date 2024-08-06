@@ -7,3 +7,6 @@ tsconfig.tsbuildinfo
 lib/
 es/
 dist/
+
+src/analyser/lezer_parser/parser.js
+src/analyser/lezer_parser/parser.terms.js

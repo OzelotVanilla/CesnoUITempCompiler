@@ -7,7 +7,12 @@
     "keywords": [
         "compiler"
     ],
+    "dependencies": {
+        "@lezer/lr": "^1.4.1",
+        "js-tokens": "^9.0.0"
+    },
     "devDependencies": {
+        "@lezer/generator": "^1.7.0",
         "@types/jest": "^29.5.12",
         "jest": "^29.7.0",
         "ts-jest": "^29.2.3",
@@ -32,7 +37,10 @@
         "url": "git+https://github.com/OzelotVanilla/CesnoUITempCompiler.git"
     },
     "scripts": {
-        "build": "tsup --config ./tsup.config.ts",
-        "test": "jest --config jestconfig.json --silent=false"
+        "build": "pnpm run build_lezer_parser && pnpm run build_ts",
+        "test": "jest --config jestconfig.json --silent=false",
+        "prepare": "pnpm run build_lezer_parser",
+        "build_lezer_parser": "lezer-generator src/analyser/lezer_parser/cesno_ui.grammar -o src/analyser/lezer_parser/parser.js",
+        "build_ts": "tsup --config ./tsup.config.ts"
     }
 }

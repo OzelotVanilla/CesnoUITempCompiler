@@ -9,7 +9,11 @@ const tsup_config: Options = {
     skipNodeModulesBundle: true,
     target: 'esnext',
     outDir: 'dist',
-    entry: ['src/**/*.ts']
+    entry: [
+        "src/**/*.ts",
+        "!src/**/*.d.ts",
+        "src/**/*.js"
+    ]
 };
 
 export default tsup_config
