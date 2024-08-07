@@ -38,3 +38,19 @@ It is followed by a **name** and an **initial value**.
 
 The initial value could be **literal** or a **statement** (that finally evaluates to simple literal).
 
+### Class Structure
+
+* Statement Types
+  * `StmtNode`: The abstract base class.
+  * `NameDefStmt`: The abstract base class for the statement that defines a name.
+    * `ComponentDefStmt`, `FunctionDefStmt`
+    * `ConstDefStmt`, `VarDefStmt`, `StateDefStmt`.
+    * `ExternDefStmt`: declare a name that has separate definition outside of the current scope.
+  * `RenderStmt`.
+  * TODO: `ControlFlowStmt`: Describe a control flow, such as `while`.
+* Expression Types
+  * `Expression`: The abstract base class. Extends `StmtNode`.
+  * `CesMLExpression`: For the UI representing structure, such as `<a>123</a>`.
+  * `IdentifierExpression`: Refering to a name.
+  * `OperandfulExpression`: For statements containing operand. Note: `[]` subscription or `.` access is also operand.
+  * `ValueExpression`: For the literals.
