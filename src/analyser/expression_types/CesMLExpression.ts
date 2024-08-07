@@ -1,5 +1,6 @@
 import { AcceptableType } from "../../util/compiler_acceptable_types"
 import { Expression, Expression_Args } from "./Expression"
+import { ValueExpression } from "./ValueExpression"
 
 export class CesMLExpression extends Expression
 {
@@ -13,7 +14,7 @@ export class CesMLExpression extends Expression
 
     public readonly props: Record<string, AcceptableType.BaseObject | Expression>
 
-    public readonly children: CesMLExpression[] | null
+    public readonly children: Expression[] | null
 
     public get repr()
     {
@@ -28,16 +29,23 @@ export class CesMLExpression extends Expression
 
     constructor({ component, props, children = null, with_parenthesis }: CesMLExpression_Args)
     {
+        function wrap(value: CesMLExpression | string | AcceptableType.BaseObject)
+        {
+            if (typeof value == "string") { return new ValueExpression({ value: new AcceptableType.String({ value }) }) }
+            else if (value instanceof AcceptableType.BaseObject) { return new ValueExpression({ value }) }
+            else { return value }
+        }
+
         super({ with_parenthesis })
         this.component = component
         this.props = props ?? {}
         this.children = children == null ? null :
-            children instanceof Array ? children : [children]
+            children instanceof Array ? children.map(wrap) : [wrap(children)]
     }
 }
 
 type CesMLExpression_Args = {
     component: string
     props?: Record<string, AcceptableType.BaseObject | Expression>
-    children?: CesMLExpression | CesMLExpression[] | null
+    children?: CesMLExpression | CesMLExpression[] | string | null
 } & Expression_Args

@@ -1,5 +1,5 @@
 import { Scope } from "./Scope"
-import { NameDefStmt } from "./statement_types/NameDefStmt"
+import { NameDefStmt, NameType } from "./statement_types/NameDefStmt"
 
 /**
  * Store the definitions in a tree shape.
@@ -43,11 +43,17 @@ export class SymbolTable
     }
 }
 
-type Symbol = {
+type Symbol__For_Input = {
     /** Name of the symbol. */
     name: string
     def_stmt: NameDefStmt
 }
+
+type Symbol = {
+    get type(): NameType
+} & Symbol__For_Input
+
+export type { SymbolTableNode }
 
 class SymbolTableNode
 {
@@ -64,7 +70,7 @@ class SymbolTableNode
 
     private static id_counter = 1
 
-    public getSymbol({ target, from_name = null }: getSymbol_Param): Symbol | undefined
+    public getSymbol({ name, from_name = null }: getSymbol_Params): Symbol | undefined
     {
         // First search current scope about this name.
         // If the symbol is ordered, cannot find name after the node that is after the searching source.
@@ -73,26 +79,26 @@ class SymbolTableNode
             for (const sym of this.symbols)
             {
                 if (sym.name == from_name) { break } // No available result here. Need to search outer level.
-                if (sym.name == target) { return sym }
+                if (sym.name == name) { return sym }
             }
         }
         // Not ordered, or no specified search stop point (`from_name`), see if matching symbols.
         else 
         {
-            const result = this.symbols.find(e => e.name == target)
+            const result = this.symbols.find(e => e.name == name)
             if (result != undefined) { return result }
             // else, need to search outer level.
         }
 
         // No result in this level, find in outer level.
-        if (this.outer_node != null) { return this.outer_node.getSymbol({ target, from_name: this.name }) }
+        if (this.outer_node != null) { return this.outer_node.getSymbol({ name, from_name: this.name }) }
         // Already at global scope ?
         else { return undefined }
     }
 
-    public addSymbol(sym: Symbol)
+    public addSymbol(sym: Symbol__For_Input)
     {
-        this.symbols.push(sym)
+        this.symbols.push({ ...sym, get type() { return sym.def_stmt.stmt_type } })
     }
 
     public getDescendantNodeOf({ name }: { name: string })
@@ -148,9 +154,9 @@ type SymbolTableNode_Args = {
     symbols?: Symbol[]
 }
 
-type getSymbol_Param = {
+type getSymbol_Params = {
     /** The name of the symbol wants to find. */
-    target: string
+    name: string
     /** The name for the searching to stop. */
     from_name?: string | null
 }

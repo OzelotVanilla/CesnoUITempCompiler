@@ -6,15 +6,15 @@ import { StmtNode } from "./StmtNode";
  */
 export class RenderStmt extends StmtNode
 {
-    public readonly ui_tree: CesMLExpression
+    public readonly ui_tree: CesMLExpression[]
 
     constructor({ ui_tree }: RenderStmt_Args)
     {
         super({})
-        this.ui_tree = ui_tree
+        this.ui_tree = ui_tree instanceof Array ? ui_tree : [ui_tree]
     }
 }
 
 type RenderStmt_Args = {
-    ui_tree: CesMLExpression
+    ui_tree: CesMLExpression | CesMLExpression[]
 }
