@@ -1,5 +1,5 @@
 import { Scope } from "./Scope"
-import { NameDefStmt } from "./statement_types/NameDefStmt"
+import { NameDefStmt, NameType } from "./statement_types/NameDefStmt"
 
 /**
  * Store the definitions in a tree shape.
@@ -43,11 +43,27 @@ export class SymbolTable
     }
 }
 
-type Symbol = {
-    /** Name of the symbol. */
-    name: string
+type Sign__For_Input = {
     def_stmt: NameDefStmt
 }
+
+type Sign_Args = {
+
+} & Sign__For_Input
+
+class Sign
+{
+    public readonly def_stmt: NameDefStmt
+    public get name() { return this.def_stmt.name }
+    public get type() { return this.def_stmt.stmt_type }
+
+    constructor({ def_stmt }: Sign_Args)
+    {
+        this.def_stmt = def_stmt
+    }
+}
+
+export type { SymbolTableNode }
 
 class SymbolTableNode
 {
@@ -57,14 +73,14 @@ class SymbolTableNode
     /** The current scope name and type of this node. */
     public readonly scope: Scope
     public get name() { return this.scope.last_level_name }
-    public readonly symbols: Symbol[]
+    public readonly symbols: Sign[]
     private __descendant_nodes: SymbolTableNode[] = []
-    public get descendant_nodes() { return [...this.__descendant_nodes] }
+    public get descendant_nodes() { return [...this.__descendant_nodes] as const }
     public readonly is_symbols_ordered: boolean
 
     private static id_counter = 1
 
-    public getSymbol({ target, from_name = null }: getSymbol_Param): Symbol | undefined
+    public getSymbol({ name, from_name = null }: getSymbol_Params): Sign | undefined
     {
         // First search current scope about this name.
         // If the symbol is ordered, cannot find name after the node that is after the searching source.
@@ -73,26 +89,26 @@ class SymbolTableNode
             for (const sym of this.symbols)
             {
                 if (sym.name == from_name) { break } // No available result here. Need to search outer level.
-                if (sym.name == target) { return sym }
+                if (sym.name == name) { return sym }
             }
         }
         // Not ordered, or no specified search stop point (`from_name`), see if matching symbols.
         else 
         {
-            const result = this.symbols.find(e => e.name == target)
+            const result = this.symbols.find(e => e.name == name)
             if (result != undefined) { return result }
             // else, need to search outer level.
         }
 
         // No result in this level, find in outer level.
-        if (this.outer_node != null) { return this.outer_node.getSymbol({ target, from_name: this.name }) }
+        if (this.outer_node != null) { return this.outer_node.getSymbol({ name, from_name: this.name }) }
         // Already at global scope ?
         else { return undefined }
     }
 
-    public addSymbol(sym: Symbol)
+    public addSymbol({ def_stmt }: Sign__For_Input)
     {
-        this.symbols.push(sym)
+        this.symbols.push(new Sign({ def_stmt }))
     }
 
     public getDescendantNodeOf({ name }: { name: string })
@@ -145,12 +161,12 @@ type SymbolTableNode_Args = {
     outer_node: SymbolTableNode | null
     /** The current scope name and type of this node. */
     scope: Scope
-    symbols?: Symbol[]
+    symbols?: Sign[]
 }
 
-type getSymbol_Param = {
+type getSymbol_Params = {
     /** The name of the symbol wants to find. */
-    target: string
+    name: string
     /** The name for the searching to stop. */
     from_name?: string | null
 }
