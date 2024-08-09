@@ -34,6 +34,8 @@ export class IdentifierExpression extends Expression
 
     public get repr() { return this.with_parenthesis ? `(${this.name})` : this.name }
 
+    public get ts_repr() { return this.repr }
+
     constructor({ name, type, with_parenthesis }: IdentifierExpression_Args)
     {
         super({ with_parenthesis })

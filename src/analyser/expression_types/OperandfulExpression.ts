@@ -1,12 +1,11 @@
-import { CesMLExpression } from "./CesMLExpression";
 import { Expression, Expression_Args } from "./Expression";
 
 export type Operator = UnaryOperator | BinaryOperator | TertiaryOperator | PostfixOperator
 
 export abstract class OperandfulExpression extends Expression
 {
-    public abstract get repr(): string
     public abstract readonly operator: Operator
+    public abstract get ts_repr(): string
 }
 
 export class UnaryExpression extends OperandfulExpression
@@ -24,6 +23,19 @@ export class UnaryExpression extends OperandfulExpression
         const result = `${positioned_operators[0]}${additional_space}${this.operand.repr}${positioned_operators[1]}`
 
         return this.with_parenthesis ? `(${result})` : result
+    }
+
+    public get ts_repr()
+    {
+        const convert_arr = different_in_ts_operator_convert_dict.get(this.operator)
+        if (convert_arr != undefined) // Means it has to be converted.
+        {
+            return convert_arr.map(e => e == "$1" ? this.operand.ts_repr : e).join(" ")
+        }
+        else
+        {
+            return this.repr
+        }
     }
 
     constructor({ operator, operand, with_parenthesis }: UnaryExpression_Args)
@@ -54,6 +66,22 @@ export class BinaryExpression extends OperandfulExpression
 
         return this.with_parenthesis ? `(${result})` : result
     }
+
+    public get ts_repr()
+    {
+        const convert_arr = different_in_ts_operator_convert_dict.get(this.operator)
+        if (convert_arr != undefined) // Means it has to be converted.
+        {
+            return convert_arr
+                .map(e => e == "$1" ? this.operand_left.ts_repr : e == "$2" ? this.operand_right.ts_repr : e)
+                .join(" ")
+        }
+        else
+        {
+            return this.repr
+        }
+    }
+
 
     constructor({ operator, operand_left, operand_right, with_parenthesis }: BinaryExpression_Args)
     {
@@ -88,6 +116,11 @@ export class TertiaryExpression extends OperandfulExpression
         return this.with_parenthesis ? `(${result})` : result
     }
 
+    public get ts_repr()
+    {
+        return this.repr
+    }
+
     constructor({ operator, operand_left, operand_middle, operand_right, with_parenthesis }: TertiaryExpression_Args)
     {
         super({ with_parenthesis })
@@ -116,6 +149,11 @@ export class MemberAccessExpression extends OperandfulExpression
     public get repr()
     {
         return `${this.operand.repr}${operator_repr_dict.get(this.operator) ?? "."}${this.member}`
+    }
+
+    public get ts_repr()
+    {
+        return this.repr
     }
 
     constructor({ operand, member, with_parenthesis, operator = PostfixOperator.member_access }: MemberAccessExpression_Args)
@@ -149,6 +187,11 @@ export class CallExpression extends OperandfulExpression
         return `${this.operand.repr}${operators[0]}${this.params.join(", ")}${operators[1]}`
     }
 
+    public get ts_repr()
+    {
+        return this.repr
+    }
+
     constructor({ operand, params, with_parenthesis, operator = PostfixOperator.call }: CallExpression_Args)
     {
         super({ with_parenthesis })
@@ -178,6 +221,11 @@ export class SubscriptExpression extends OperandfulExpression
     {
         const operators = operator_repr_dict.get(this.operator) ?? ["[", "]"]
         return `${this.operand.repr}${operators[0]}${this.params}${operators[1]}`
+    }
+
+    public get ts_repr()
+    {
+        return this.repr
     }
 
     constructor({ operand, params, with_parenthesis, operator = PostfixOperator.subscript }: SubscriptExpression_Args)
@@ -361,4 +409,47 @@ const operator_repr_dict: Map<Operator | string, string[]> = new Map([
     [TertiaryOperator.if_then_else, ["?", ":"]],
 
     [PostfixOperator.member_access, ["."]], [PostfixOperator.call, ["(", ")"]], [PostfixOperator.subscript, ["[", "]"]]
+])
+
+/**
+ * Used for converting into TypeScript representation.
+ */
+const different_in_ts_operator_convert_dict: Map<Operator | string, string[]> = new Map([
+    ["logic_not", ["!", "$1"]],
+    ["mod", ["$1", "%", "$2"]],
+    ["logic_and", ["$1", "&&", "$2"]], ["logic_or", ["$1", "||", "$2"]],
+    ["logic_xor", ["$1", "!==", "$2"]],
+    ["bitwise_and", ["$1", "&", "$2"]], ["bitwise_or", ["$1", "|", "$2"]],
+    ["bitwise_xor", ["$1", "^", "$2"]],
+    ["bitwise_left_shift", ["$1", "<<", "$2"]],
+    ["bitwise_right_shift", ["$1", ">>", "$2"]],
+    ["bitwise_unsigned_left_shift", ["$1", "<<", "$2"]],
+    ["bitwise_unsigned_right_shift", ["$1", ">>>", "$2"]],
+    ["assign_after_mod", ["$1", "%=", "$2"]],
+    ["assign_after_bitwise_and", ["$1", "&=", "$2"]],
+    ["assign_after_bitwise_or", ["$1", "|=", "$2"]],
+    ["assign_after_bitwise_xor", ["$1", "^=", "$2"]],
+    ["assign_after_bitwise_left_shift", ["$1", "<<=", "$2"]],
+    ["assign_after_bitwise_right_shift", ["$1", ">>=", "$2"]],
+    ["assign_after_bitwise_unsigned_left_shift", ["$1", "<<=", "$2"]],
+    ["assign_after_bitwise_unsigned_right_shift", ["$1", ">>>=", "$2"]],
+
+    [UnaryOperator.logic_not, ["!", "$1"]],
+    [BinaryOperator.mod, ["$1", "%", "$2"]],
+    [BinaryOperator.logic_and, ["$1", "&&", "$2"]], [BinaryOperator.logic_or, ["$1", "||", "$2"]],
+    [BinaryOperator.logic_xor, ["$1", "!==", "$2"]],
+    [BinaryOperator.bitwise_and, ["$1", "&", "$2"]], [BinaryOperator.bitwise_or, ["$1", "|", "$2"]],
+    [BinaryOperator.bitwise_xor, ["$1", "^", "$2"]],
+    [BinaryOperator.bitwise_left_shift, ["$1", "<<", "$2"]],
+    [BinaryOperator.bitwise_right_shift, ["$1", ">>", "$2"]],
+    [BinaryOperator.bitwise_unsigned_left_shift, ["$1", "<<", "$2"]], // It is ugly but JavaScript only has `<<`.
+    [BinaryOperator.bitwise_unsigned_right_shift, ["$1", ">>>", "$2"]],
+    [BinaryOperator.assign_after_mod, ["$1", "%=", "$2"]],
+    [BinaryOperator.assign_after_bitwise_and, ["$1", "&=", "$2"]],
+    [BinaryOperator.assign_after_bitwise_or, ["$1", "|=", "$2"]],
+    [BinaryOperator.assign_after_bitwise_xor, ["$1", "^=", "$2"]],
+    [BinaryOperator.assign_after_bitwise_left_shift, ["$1", "<<=", "$2"]],
+    [BinaryOperator.assign_after_bitwise_right_shift, ["$1", ">>=", "$2"]],
+    [BinaryOperator.assign_after_bitwise_unsigned_left_shift, ["$1", "<<=", "$2"]],
+    [BinaryOperator.assign_after_bitwise_unsigned_right_shift, ["$1", ">>>=", "$2"]],
 ])
