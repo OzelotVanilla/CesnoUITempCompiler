@@ -1,9 +1,11 @@
+import { HasTypeScriptRepresentation } from "../../generator/tsify";
 import { HasCesnoRepresentation } from "../../util/HasCesnoRepresentation";
 import { StmtNode } from "../statement_types/StmtNode";
 
-export abstract class Expression extends StmtNode implements HasCesnoRepresentation
+export abstract class Expression extends StmtNode implements HasCesnoRepresentation, HasTypeScriptRepresentation
 {
     public abstract get repr(): string
+    public abstract get ts_repr(): string
 
     public readonly with_parenthesis: boolean
 

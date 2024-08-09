@@ -17,6 +17,21 @@ export class ValueExpression extends Expression
 
     public get repr() { return this.with_parenthesis ? `(${this.value.repr})` : this.value.repr }
 
+    public get ts_repr()
+    {
+        switch (this.value.constructor)
+        {
+            case AcceptableType.String:
+            case AcceptableType.Number:
+            case AcceptableType.Bool:
+            case AcceptableType.Array:
+                return this.repr
+
+            default:
+                throw TypeError(`ValueExpression.ts_repr has not implemented "${this.value.constructor}".`)
+        }
+    }
+
     constructor({ value, with_parenthesis }: ValueExpression_Args)
     {
         super({ with_parenthesis })

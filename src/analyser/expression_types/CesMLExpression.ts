@@ -1,4 +1,6 @@
+import { HasTypeScriptRepresentation } from "../../generator/tsify"
 import { AcceptableType } from "../../util/compiler_acceptable_types"
+import { HasCesnoRepresentation } from "../../util/HasCesnoRepresentation"
 import { Expression, Expression_Args } from "./Expression"
 import { ValueExpression } from "./ValueExpression"
 
@@ -16,15 +18,25 @@ export class CesMLExpression extends Expression
 
     public readonly children: Expression[] | null
 
-    public get repr()
+    private getRepr(reprAccess: (e: HasCesnoRepresentation & HasTypeScriptRepresentation) => string)
     {
         const comp_name = this.component
-        const inner = (this.children != null ? `\n  ${this.children.map(e => e.repr).join("\n  ")}\n` : "") as string
-        const props = Object.entries(this.props).map(([k, v]) => `${k}={${v.repr}}`).join(" ")
+        const inner = (this.children != null ? `\n  ${this.children.map(e => reprAccess(e)).join("\n  ")}\n` : "") as string
+        const props = Object.entries(this.props).map(([k, v]) => `${k}={${reprAccess(v)}}`).join(" ")
 
         const result = `<${comp_name} ${props}>${inner}</${comp_name}>`
 
         return this.with_parenthesis ? `(${result})` : result
+    }
+
+    public get repr()
+    {
+        return this.getRepr(e => e.repr)
+    }
+
+    public get ts_repr()
+    {
+        return this.getRepr(e => e.ts_repr)
     }
 
     constructor({ component, props, children = null, with_parenthesis }: CesMLExpression_Args)

@@ -1,3 +1,4 @@
+import { HasTypeScriptRepresentation } from "../generator/tsify"
 import { HasCesnoRepresentation } from "./HasCesnoRepresentation"
 
 export enum AcceptableTypeName
@@ -11,12 +12,14 @@ export enum AcceptableTypeName
 
 export namespace AcceptableType
 {
-    export abstract class BaseObject implements HasCesnoRepresentation
+    export abstract class BaseObject implements HasCesnoRepresentation, HasTypeScriptRepresentation
     {
         public static readonly class_type: AcceptableTypeName = AcceptableTypeName.object
         public get type() { return AcceptableType.Type.make({ class_name: AcceptableTypeName.object }) }
 
         public abstract get repr(): string
+
+        public abstract get ts_repr(): string
 
         constructor({ }: BaseObject_Args)
         {
@@ -30,6 +33,8 @@ export namespace AcceptableType
         public override get type() { return AcceptableType.Type.make({ class_name: AcceptableTypeName.number }) }
 
         public get repr() { return this.value.toString() }
+
+        public get ts_repr() { return this.repr }
 
         public readonly value: number
 
@@ -47,6 +52,8 @@ export namespace AcceptableType
 
         public get repr() { return `"${this.value}"` }
 
+        public get ts_repr() { return this.repr }
+
         public value: string
 
         constructor({ value }: String_Args)
@@ -62,6 +69,8 @@ export namespace AcceptableType
         public override get type() { return AcceptableType.Type.make({ class_name: AcceptableTypeName.bool }) }
 
         public get repr() { return this.value.toString() }
+
+        public get ts_repr() { return this.repr }
 
         public readonly value: boolean
 
@@ -84,6 +93,8 @@ export namespace AcceptableType
         }
 
         public get repr() { return `[${this.elements.map(e => e.repr).join(", ")}]` }
+
+        public get ts_repr() { return this.repr }
 
         public readonly element_type: AcceptableType.Type
 
