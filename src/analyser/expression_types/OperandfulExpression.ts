@@ -245,6 +245,46 @@ export type SubscriptExpression_Args = {
     params: Expression
 } & Expression_Args
 
+// export function compositeOperatorAndOperand(
+//     { operator, operand, with_parenthesis }: compositeOperatorAndOperand__Unary_Params
+// ): string
+// export function compositeOperatorAndOperand(
+//     { operator, operand_left, operand_right, with_parenthesis }: compositeOperatorAndOperand__Binary_Params
+// ): string
+// export function compositeOperatorAndOperand(
+//     { operator, operand_left, operand_middle, operand_right, with_parenthesis }: compositeOperatorAndOperand__Tertiary_Params
+// ): string
+// export function compositeOperatorAndOperand(
+//     param: compositeOperatorAndOperand_Params
+// ): string
+// {
+//     if ("operand_middle" in param) // Tertiary
+//     {
+//         param
+//     }
+//     else if ("operand_left" in param) // Binary
+//     {
+
+//     }
+//     else if ("operand" in param)
+//     {
+
+//     }
+//     else
+//     {
+//         throw TypeError(`Unknown shape of input: ${param}.`)
+//     }
+// }
+
+// export type compositeOperatorAndOperand_Params =
+//     | compositeOperatorAndOperand__Unary_Params
+//     | compositeOperatorAndOperand__Binary_Params
+//     | compositeOperatorAndOperand__Tertiary_Params
+
+// export type compositeOperatorAndOperand__Unary_Params = UnaryExpression_Args
+// export type compositeOperatorAndOperand__Binary_Params = BinaryExpression_Args
+// export type compositeOperatorAndOperand__Tertiary_Params = TertiaryExpression_Args
+
 export enum UnaryOperator
 {
     /** `+a`. */
@@ -354,13 +394,15 @@ export enum PostfixOperator
 }
 
 /**
+ * This is the operator based on the use for Cesno representation.
+ * 
  * For unary operator, to correctly show the prefix-suffix difference, the array is used like:
  * ```
  * "prefix_inc", ["++", ""] // ++a
  * "suffix_inc", ["", "++"] // a++
  * ```
  */
-const operator_repr_dict: Map<Operator | string, string[]> = new Map([
+export const operator_repr_dict: Map<Operator | string, string[]> = new Map([
     ["numerise", ["+", ""]], ["negate", ["-", ""]], ["logic_not", ["not", ""]],
     ["prefix_inc", ["++", ""]], ["prefix_dec", ["--", ""]], ["suffix_inc", ["", "++"]], ["suffix_dec", ["", "--"]],
 
@@ -414,7 +456,7 @@ const operator_repr_dict: Map<Operator | string, string[]> = new Map([
 /**
  * Used for converting into TypeScript representation.
  */
-const different_in_ts_operator_convert_dict: Map<Operator | string, string[]> = new Map([
+export const different_in_ts_operator_convert_dict: Map<Operator | string, string[]> = new Map([
     ["logic_not", ["!", "$1"]],
     ["mod", ["$1", "%", "$2"]],
     ["logic_and", ["$1", "&&", "$2"]], ["logic_or", ["$1", "||", "$2"]],
