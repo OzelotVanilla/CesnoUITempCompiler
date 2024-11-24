@@ -41,7 +41,7 @@ export class CesMLExpression extends Expression
 
     constructor({ component, props, children = null, with_parenthesis }: CesMLExpression_Args)
     {
-        function wrap(value: CesMLExpression | string | AcceptableType.BaseObject)
+        function wrap(value: CesMLExpression | Expression | string | AcceptableType.BaseObject)
         {
             if (typeof value == "string") { return new ValueExpression({ value: new AcceptableType.String({ value }) }) }
             else if (value instanceof AcceptableType.BaseObject) { return new ValueExpression({ value }) }
@@ -59,5 +59,5 @@ export class CesMLExpression extends Expression
 type CesMLExpression_Args = {
     component: string
     props?: Record<string, AcceptableType.BaseObject | Expression>
-    children?: CesMLExpression | CesMLExpression[] | string | null
+    children?: CesMLExpression | CesMLExpression[] | Expression | string | null
 } & Expression_Args

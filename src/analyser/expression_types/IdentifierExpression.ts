@@ -10,6 +10,8 @@ export enum IdentifierType
     state = "state",
     /** Related to component's property. */
     property = "property",
+    /** The child of the component. */
+    child = "child",
     /** The argument inside function body, defined by function parameter's list. */
     argument = "argument",
     /** The member of a class/object. Such as `b` in `a.b`. */
