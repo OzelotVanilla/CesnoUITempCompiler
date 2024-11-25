@@ -1,122 +1,32 @@
-export enum TokenType
-{
-    /**
-     * The keyword that starts a definition, such as `component` or `state`.
-     */
-    definition_word = "definition_word",
+
+
+/**
+ * Each OBJECT of TokenType defines a type of token.
+ * Creating subclasses of TokenType directly is not allowed, because there isn't a common method to match all different instances of TokenType.
+ * If you need a new subclass of TokenType, make it subclass of DelimiterTokenType or RemainderTokenType or contect with the developers.
+ * An instance of DelimiterTokenType defines a delimiter token. An instance of RemainderTokenType defines a remainder token.
+ * A delimiter token can define its own contour which means it can DELIMIT the code makes a Tokeniser able to match and separate it from the code.
+ * Tokeniser always first tries to match and separate all delimiter tokens from the code and the REMAININGs are remainder tokens.
+ * For example in the code:
+ * a = 2;
+ * The spaces and the equal sign and the semicolon are delimiter tokens and "a" and "2" are remainder tokens.
+ */
+export abstract class TokenType {
 
     /**
-     * A name that could be a state, component, dependent value, etc.
+     * Name of a TokenType human readable. Should be unique.
      */
-    identifier = "identifier",
+    public readonly name: string;
 
     /**
-     * A string of content like `"abc"`.
+     * True if tokens of this type should be removed after tokenising. If true, Tokeniser will remove tokens of this type after tokenising.
      */
-    string = "string",
+    public readonly auto_remove: boolean
 
-    /**
-     * A numerical value
-     */
-    numerical = "numerical",
-
-    /**
-     * Literally left angle bracket `<`.
-     */
-    left_ang_bracket = "left_ang_bracket",
-
-    /**
-     * Literally right angle bracket `>`.
-     */
-    right_ang_bracket = "right_ang_bracket",
-
-    /**
-     * Literally left parenthesis `(`.
-     */
-    left_paren = "left_paren",
-
-    /**
-     * Literally right parenthesis `)`.
-     */
-    right_paren = "right_paren",
-
-    /**
-     * Literally left bracket `[`.
-     */
-    left_bracket = "left_bracket",
-
-    /**
-     * Literally right bracket `]`.
-     */
-    right_bracket = "right_bracket",
-
-    /**
-     * Literally left brace `{`.
-     */
-    left_brace = "left_brace",
-
-    /**
-     * Literally right brace `}`.
-     */
-    right_brace = "right_brace",
-
-    /**
-     * Literally plus sign `+`.
-     */
-    plus = "plus",
-
-    /**
-     * Literally minus sign `-`.
-     */
-    minus = "minus",
-
-    /**
-     * Literally multiply sign `*`.
-     */
-    multiply = "multiply",
-
-    /**
-     * Literally divide sign `/`.
-     */
-    divide = "divide",
-
-    /**
-     * Literally divide sign `=`.
-     */
-    equal = "equal",
-
-    /**
-     * Literally comma `,`.
-     */
-    comma = "comma",
-
-    /**
-     * Literally dot `.`.
-     */
-    dot = "dot",
-
-    /**
-     * Literally double-quotation-mark `"`.
-     */
-    double_quote = "double_quote",
-
-    /**
-     * Literally single-quotation-mark `'`.
-     */
-    single_quote = "single_quote",
-
-    /**
-     * Literally a colon `:`.
-     */
-    colon = "colon",
-
-    /**
-     * Literally a semicolon `;`.
-     */
-    semicolon = "semicolon",
-
-    /**
-     * Line break, exactly be `\r`, `\n`, or `\r\n`.
-     */
-    new_line = "new_line"
+    protected constructor(name: string, auto_remove: boolean)
+    {
+        this.name = name;
+        this.auto_remove = auto_remove;
+    }
+    
 }
