@@ -1,7 +1,9 @@
 import { Result } from "../../util/Result";
 import { DelimiterTokenType } from "../DelimiterTokenType";
 
-
+/**
+ * For only "common" strings. Tempelate strings are not supported in this temp compiler.
+ */
 export class StringTokenType extends DelimiterTokenType
 {
 

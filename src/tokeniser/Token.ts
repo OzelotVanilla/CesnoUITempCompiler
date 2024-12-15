@@ -1,3 +1,6 @@
+import { DelimiterTokenType } from "./DelimiterTokenType";
+import { FixedDelimiterTokenType } from "./FixedDelimiterTokenType";
+import { RemainderTokenType } from "./RemainderTokenType";
 import { TokenType } from "./TokenType";
 
 export type TokenInfo = { content: string | undefined, raw_content: string | undefined, token_type: TokenType | undefined, position_row: number | undefined, position_col: number | undefined, position_offset: number | undefined };
@@ -45,5 +48,19 @@ export class Token
     public get token_length(): number
     {
         return this.raw_content.length;
+    }
+
+    public toString()
+    {
+        if (this.token_type instanceof RemainderTokenType)
+        {
+            return String("{" + this.content + "---" + this.token_type.name + "}");
+        } else if (this.token_type instanceof FixedDelimiterTokenType)
+        {
+            return String("(" + this.content + ")");
+        } else if (this.token_type instanceof DelimiterTokenType)
+        {
+            return String("[" + this.content + "---" + this.token_type.name + "]");
+        }
     }
 }

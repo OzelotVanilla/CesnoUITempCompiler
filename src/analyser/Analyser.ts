@@ -1,4 +1,5 @@
-import { Token } from "../tokeniser/Tokeniser"
+import { Token } from "../tokeniser/Token"
+
 
 export class Analyser
 {

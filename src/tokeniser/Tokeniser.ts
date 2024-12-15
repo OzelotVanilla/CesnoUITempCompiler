@@ -5,6 +5,9 @@ import { RemainderTokenType } from "./RemainderTokenType";
 import { Token, TokenInfo } from "./Token"
 import { TokenType } from "./TokenType"
 
+/**
+ * The main class of Tokeniser
+ */
 export class Tokeniser
 {
     private args: Tokeniser_Args;
@@ -33,6 +36,7 @@ export class Tokeniser
         main_loop_of_matching:
         for (let tokenise_index = new TokenComplexCoordinate(code), match_index = new TokenComplexCoordinate(code); match_index.index < code.length;)
         {
+
             let code_segment = code.slice(match_index.index);
             let match_succeed = false;
             let delimiter_token_info: TokenInfo = { content: undefined, raw_content: undefined, token_type: undefined, position_row: undefined, position_col: undefined, position_offset: undefined };
@@ -40,12 +44,14 @@ export class Tokeniser
             for (let token_type of this.other_delimiter_token_types)
             {
                 let match_result = token_type.matchAndGetContent(code_segment);
+
                 if (match_result.isOk())
                 {
                     match_succeed = true;
                     delimiter_token_info.content = match_result.unwrapOk().content;
                     delimiter_token_info.raw_content = match_result.unwrapOk().content;
                     delimiter_token_info.token_type = token_type;
+                    match_index.index = match_index.index + match_result.unwrapOk().raw_content_length;
                     break;
                 }
             }
@@ -58,6 +64,7 @@ export class Tokeniser
                     delimiter_token_info.content = match_result.content;
                     delimiter_token_info.raw_content = match_result.content;
                     delimiter_token_info.token_type = match_result.token_type;
+                    match_index.index = match_index.index + match_result.content.length;
                 }
             }
             if (!match_succeed)
@@ -67,25 +74,32 @@ export class Tokeniser
             }
 
             case_of_remainder_matching:
-            if (match_index.index > tokenise_index.index)
+            if (match_index.index - 1 > tokenise_index.index)
             {
-                let remainder = code.slice(tokenise_index.index, match_index.index);
+                let remainder = code.slice(tokenise_index.index, match_index.index - 1);
                 for (let remainder_token_type of this.remainder_token_types)
                 {
                     let match_result = remainder_token_type.match(remainder);
                     if (match_result.isOk())
                     {
-                        tokens.push(new Token({ content: match_result.unwrapOk(), raw_content: remainder, token_type: remainder_token_type, position_row: tokenise_index.position_row, position_col: tokenise_index.position_column, position_offset: tokenise_index.index }));
+                        if (!(remainder_token_type.auto_remove))
+                        {
+                            tokens.push(new Token({ content: match_result.unwrapOk(), raw_content: remainder, token_type: remainder_token_type, position_row: tokenise_index.position_row, position_col: tokenise_index.position_column, position_offset: tokenise_index.index }));
+                        }
                         break case_of_remainder_matching;
                     }
                 }
-                return new Result(false, new TokeniseError("No TokenType for token \"" + remainder + "\"", tokenise_index.position_row, tokenise_index.position_column, tokenise_index.index, {raw_content: remainder}));
+                return new Result(false, new TokeniseError("No TokenType for token \"" + remainder + "\"", tokenise_index.position_row, tokenise_index.position_column, tokenise_index.index, { raw_content: remainder }));
             }
+            tokenise_index.index = match_index.index;
 
             delimiter_token_info.position_row = match_index.position_row;
             delimiter_token_info.position_col = match_index.position_column;
             delimiter_token_info.position_offset = match_index.index;
-            tokens.push(new Token(delimiter_token_info));
+            if (!(delimiter_token_info.token_type?.auto_remove))
+            {
+                tokens.push(new Token(delimiter_token_info));
+            }
 
 
         }
@@ -126,7 +140,8 @@ export type TokeniseResult = {
     time_consumed: number
 }
 
-export class TokeniseError extends Error {
+export class TokeniseError extends Error
+{
 
     /** Human readable 0-based row position of token's first character. */
     public readonly position_row: number;
@@ -139,7 +154,7 @@ export class TokeniseError extends Error {
 
     public readonly token_raw_content?: string;
 
-    public constructor(message: string, position_row: number, position_col: number, position_offset: number, content?: {content?: string, raw_content?: string})
+    public constructor(message: string, position_row: number, position_col: number, position_offset: number, content?: { content?: string, raw_content?: string })
     {
         super(message);
         this.position_row = position_row;
@@ -156,12 +171,9 @@ class FixedDelimiterTokenTypeRouter
 {
     private fixed_delimiter_token_types: Map<string, FixedDelimiterTokenType>[];
 
-    private max_token_type_length: number;
-
     constructor()
     {
         this.fixed_delimiter_token_types = [];
-        this.max_token_type_length = 0;
     }
 
     public addFixedDelimiterTokenTypes(...fixed_delimiter_token_types: FixedDelimiterTokenType[])
@@ -172,7 +184,7 @@ class FixedDelimiterTokenTypeRouter
     public addFixedDelimiterTokenType(fixed_delimiter_token_type: FixedDelimiterTokenType)
     {
         let current_fixed_delimiter_token_types_content_length = fixed_delimiter_token_type.content.length;
-        for (let i = this.max_token_type_length; i < current_fixed_delimiter_token_types_content_length; i++)
+        for (let i = this.fixed_delimiter_token_types.length; i < current_fixed_delimiter_token_types_content_length; i++)
         {
             this.fixed_delimiter_token_types.push(new Map());
         }
@@ -182,9 +194,9 @@ class FixedDelimiterTokenTypeRouter
 
     public matchAndGetContentAndTokenType(code_segment: string): { succeed: false } | { succeed: true, content: string, token_type: FixedDelimiterTokenType }
     {
-        for (let i = this.max_token_type_length; i > 0; i--)
+        for (let length = this.fixed_delimiter_token_types.length; length > 0; length--)
         {
-            let current_token_type = this.fixed_delimiter_token_types[i].get(code_segment.slice(0, i));
+            let current_token_type = this.fixed_delimiter_token_types[length - 1].get(code_segment.slice(0, length));
             if (current_token_type != undefined)
             {
                 return { succeed: true, content: current_token_type.content, token_type: current_token_type };
@@ -245,5 +257,10 @@ class TokenComplexCoordinate
     public get position_column(): number
     {
         return this.position_column_value;
+    }
+
+    public toString()
+    {
+        return String([this.index, this.position_column, this.position_row]);
     }
 }
